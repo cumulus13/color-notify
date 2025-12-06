@@ -5,14 +5,35 @@ Color Notify - Setup Script
 
 from setuptools import setup, find_packages
 from pathlib import Path
+import traceback
 
 # Read README
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
+def get_version():
+    """Get version from __version__.py file"""
+    try:
+        version_file = Path(__file__).parent / "__version__.py"
+        if not version_file.is_file():
+            return "2.0.1"
+        if version_file.is_file():
+            with open(version_file, "r") as f:
+                for line in f:
+                    if line.strip().startswith("version"):
+                        parts = line.split("=")
+                        if len(parts) == 2:
+                            return parts[1].strip().strip('"').strip("'")
+    except Exception as e:
+        if os.getenv('TRACEBACK') and os.getenv('TRACEBACK') in ['1', 'true', 'True']:
+            print(traceback.format_exc())
+        else:
+            print(f"ERROR: {e}")
+    return "2.0.1"
+
 setup(
     name="color-notify",
-    version="1.0.2",
+    version=get_version(),
     author="Hadi Cahyadi",
     author_email="cumulus13@gmail.com",
     description="Desktop notification tool for clipboard color code detection",
