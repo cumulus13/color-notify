@@ -293,7 +293,27 @@ class ColorNotifyApp(QApplication):
 
         ico_path = str(Path(__file__).parent / "icons" / "color-notify_128.ico")
         # print(f"ico_path is file: {os.path.isfile(ico_path)}")
-        icon = QIcon(ico_path)
+        if os.path.isfile(ico_path):
+            icon = QIcon(ico_path)
+        else:
+            pixmap = QPixmap(64, 64)
+            pixmap.fill(Qt.transparent)
+
+            painter = QPainter(pixmap)
+            
+            # Gradient effect
+            painter.setBrush(QColor(100, 150, 255))
+            painter.setPen(Qt.NoPen)
+            painter.drawEllipse(8, 8, 48, 48)
+            
+            # Inner circle
+            painter.setBrush(QColor(255, 255, 255, 100))
+            painter.drawEllipse(16, 16, 32, 32)
+            
+            painter.end()
+            
+            icon = QIcon(pixmap)
+
         # pix = QPixmap(ico_path)
         # print("Pixmap OK:", not pix.isNull(), pix.size())
 

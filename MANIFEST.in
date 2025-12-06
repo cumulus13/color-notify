@@ -14,3 +14,8 @@ exclude QUICKSTART.md
 exclude PLAN.md
 exclude INSTALL.md
 include ICONS/
+# Added entries (1 items) - 2025-12-06 17:33:49
+include icons\color-notify.png
+
+# Added entries (1 items) - 2025-12-06 17:33:58
+include icons\color-notify_128.ico

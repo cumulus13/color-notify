@@ -149,3 +149,6 @@ PROJECT_STRUCTURE.md
 PLAN.md
 INSTALL.md
 .pypirc.example
+
+# Added entries (1 items)
+build.bat
