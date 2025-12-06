@@ -190,15 +190,61 @@ class ColorNotifyApp(QApplication):
         # Error counter for clipboard access
         self.clipboard_error_count = 0
         self.max_clipboard_errors = 3
+
+    def candidate_config_file(self):
+        """
+        Generates a list of cross-platform passinput.ini path candidates,
+        using ~ (expanduser) and env vars (expandvars).
+        """
+        return [
+            Path.home() / ".color-notify.ini",
+            os.path.join(os.getcwd(), 'color-notify.ini'),        
+            os.path.join(os.getcwd(), '.color_notify', 'color-notify.ini'),        
+            os.path.expanduser("~/color-notify.ini"),
+            os.path.expanduser("~/.color_notify/color-notify.ini"),
+            os.path.expanduser("$HOME/color-notify.ini"),
+            os.path.expanduser("$HOME/.color_notify/color-notify.ini"),
+            # Sistem global (Linux/macOS)
+            "/etc/color-notify.ini",
+            "/etc/color_notify/color-notify.ini",
+            # Windows (home + roaming/local config)
+            os.path.expandvars("%USERPROFILE%\\color-notify.ini"),
+            os.path.expandvars("%USERPROFILE%\\.color_notify\\color-notify.ini"),
+            os.path.expandvars("%APPDATA%\\color_notify\\color-notify.ini"),
+            os.path.expandvars("%PROGRAMDATA%\\color_notify\\color-notify.ini"),
+            str(Path(__file__).parent / "color-notify.ini"),
+            str(Path(__file__).parent / ".color_notify/color-notify.ini")
+        ]
         
     def load_config(self):
         """Load configuration from INI file"""
-        config_file = Path.home() / ".color-notify.ini"
+        
+        for cfile in self.candidate_config_file():
+            if os.path.isfile(cfile):
+                config_file = cfile
+                break    
         
         # Fallback to local config
-        if not config_file.exists():
-            config_file = Path("color-notify.ini")
-        
+        if not Path(config_file).exists():
+            if sys.platform == 'win32':
+                config_dir = os.path.expandvars("%USERPROFILE%\\.color_notify")
+                os.makedirs(config_dir, exist_ok=True)
+                config_path = os.path.expandvars("%USERPROFILE%\\.color_notify\\color-notify.ini")
+            else:
+                try:
+                    config_dir = os.path.expanduser("$HOME/.color_notify")
+                    os.makedirs(config_dir, exist_ok=True)
+                    config_path = os.path.expanduser("$HOME/.color_notify/color-notify.ini")
+                except:
+                    config_path = os.path.expanduser("/etc/color-notify.ini")
+
+            if config_path and not os.path.isfile(config_path):
+                self.create_default_config(config_path)
+            else:
+                print(f"Using config file: {config_file}")
+        else:
+            print(f"Using config file: {config_file}")
+
         config = {
             'position': 'right_center',
             'opacity': 0.95,
@@ -212,7 +258,7 @@ class ColorNotifyApp(QApplication):
             'sound_enabled': False,
         }
         
-        if config_file.exists():
+        if Path(config_file).exists():
             parser = configparser.ConfigParser()
             parser.read(config_file)
             
@@ -232,12 +278,13 @@ class ColorNotifyApp(QApplication):
                 config['detect_hsl'] = sect.getboolean('detect_hsl', False)
                 config['poll_interval'] = int(sect.get('poll_interval', '500'))
         else:
-            self.create_default_config(config_file)
+            self.create_default_config(str(config_file))
             
         return config
         
     def create_default_config(self, config_file):
         """Create default config file"""
+        print(f"WARNING: create config file {config_file} ...")
         config = configparser.ConfigParser()
         
         config['notification'] = {

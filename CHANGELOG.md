@@ -5,12 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2024-12-06
+## [1.0.1-1.0.3] - 2024-12-06
 
 ### Fixed
 - Clipboard access conflict warnings on Windows
 - Improved error handling for clipboard access
 - Reduced default polling interval from 500ms to 1000ms for better stability
+- Repair mismatch icon path
+- Correct config file path
 
 ### Changed
 - More robust clipboard error handling with automatic interval adjustment
