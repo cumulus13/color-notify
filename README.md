@@ -11,7 +11,7 @@ A desktop notification tool that detects color codes in your clipboard and displ
 </p>
 <br/>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/cumulus13/color-notify/master/icons/colordialog.png" alt="color-notfy-color-dialog" width="200">
+  <img src="https://raw.githubusercontent.com/cumulus13/color-notify/master/colordialog.png" alt="color-notfy-color-dialog" width="200">
 </p>
 <br/>
 <p align="center">
