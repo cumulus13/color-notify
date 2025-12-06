@@ -5,7 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1-1.0.3] - 2024-12-06
+## [1.0.2-1.0.5] - 2025-12-06
+
+### Added
+- **Color Picker Dialog** - Interactive color selection tool
+  - Qt color dialog integration
+  - Manual hex input with validation
+  - Auto-copy selected colors to clipboard
+  - Live clipboard detection and auto-update
+  - Color preview with name display
+  - Keyboard shortcuts (Q/Escape to close, A for AOT toggle)
+  - Multi-monitor support with auto-centering
+- **System tray menu integration** - "🎨 Color Picker" menu item
+- **Two modes of operation** - Passive monitoring + Active picking
+
+### Changed
+- Enhanced system tray menu with color picker at top
+- Improved application structure with separate ColorPickerDialog class
+- Better window management for color picker dialog
+
+### Features
+- Color picker monitors clipboard every second
+- Always on top mode with keyboard toggle (A / Shift+A)
+- Press Enter in hex input to set color
+- Window auto-centers on screen after flag changes
+- Seamless integration with notification system
+
+## [1.0.1] - 2025-12-06
 
 ### Fixed
 - Clipboard access conflict warnings on Windows
@@ -24,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic polling interval increase on persistent errors
 - Error counter to detect persistent clipboard issues
 
-## [1.0.0] - 2024-12-06
+## [1.0.0] - 2025-12-06
 
 ### Added
 - Initial release

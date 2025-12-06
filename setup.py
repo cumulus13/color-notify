@@ -12,7 +12,7 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
 setup(
     name="color-notify",
-    version="1.0.0",
+    version="1.0.2",
     author="Hadi Cahyadi",
     author_email="cumulus13@gmail.com",
     description="Desktop notification tool for clipboard color code detection",

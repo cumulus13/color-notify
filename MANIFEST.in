@@ -10,9 +10,7 @@ global-exclude *.py[co]
 exclude PROJECT_STRUCTURE.md
 
 # Added entries (1 items) - 2025-12-06 16:34:04
-exclude QUICKSTART.md
 exclude PLAN.md
-exclude INSTALL.md
 include ICONS/
 # Added entries (1 items) - 2025-12-06 17:33:49
 include icons\color-notify.png

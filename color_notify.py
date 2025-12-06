@@ -1,23 +1,207 @@
 #!/usr/bin/env python3
+# File: color_notify.py
+# Author: Hadi Cahyadi <cumulus13@gmail.com>
+# Date: 2025-12-06
+# Description: Color Notify - Clipboard Color Notification Tool. Displays notifications when color codes are detected in clipboard
+# License: MIT
+
 """
 Color Notify - Clipboard Color Notification Tool
 Displays notifications when color codes are detected in clipboard
 """
-
 import sys
 import os
 import re
 import configparser
 from pathlib import Path
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QSystemTrayIcon, 
-                             QMenu, QAction)
+                             QMenu, QAction, QColorDialog, QVBoxLayout, 
+                             QHBoxLayout, QPushButton, QLineEdit, QMessageBox)
 from PyQt5.QtCore import QTimer, Qt, QPoint, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
-from version_get import VersionGet
 
-__version__ = VersionGet().get(True)
+try:
+    from version_get import VersionGet
+    __version__ = VersionGet().get(True)
+except:
+    __version__ = "1.0.1"
+
 __author__ = "Hadi Cahyadi"
 __email__ = "cumulus13@gmail.com"
+
+
+class ColorPickerDialog(QWidget):
+    """Color Picker Dialog Window"""
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+        self.clipboard_timer = QTimer(self)
+        self.clipboard_timer.timeout.connect(self.check_clipboard)
+        self.clipboard_timer.start(1000)  # Check clipboard every second
+
+    def init_ui(self):
+        self.setWindowTitle('Color Picker')
+        
+        # Try to load icon
+        ico_path = str(Path(__file__).parent / "icons" / "color-notify_128.ico")
+        if os.path.isfile(ico_path):
+            self.setWindowIcon(QIcon(ico_path))
+        
+        self.setFixedSize(300, 300)
+        self.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
+        
+        # Center the window
+        self.center()
+
+        # Main layout
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
+        self.setLayout(main_layout)
+
+        # Add stretch at top
+        main_layout.addStretch(1)
+
+        # Color Preview
+        self.color_widget = QLabel(self)
+        self.color_widget.setStyleSheet("background-color: black; border: 1px solid #ccc; border-radius: 5px;")
+        self.color_widget.setFixedSize(120, 80)
+        main_layout.addWidget(self.color_widget, alignment=Qt.AlignCenter)
+
+        # Color Name Label
+        color_layout = QHBoxLayout()
+        color_layout.addStretch(1)
+        
+        color_name_label = QLabel("Color name:", self)
+        color_layout.addWidget(color_name_label)
+
+        self.color_name_display = QLabel("BLACK", self)
+        self.color_name_display.setFont(QFont("Arial", 10, QFont.Bold))
+        color_layout.addWidget(self.color_name_display)
+        
+        color_layout.addStretch(1)
+        main_layout.addLayout(color_layout)
+
+        # Buttons
+        button_layout = QHBoxLayout()
+        button_layout.setSpacing(10)
+        
+        choose_button = QPushButton('Choose Color', self)
+        choose_button.clicked.connect(self.show_color_dialog)
+        choose_button.setMinimumHeight(30)
+        button_layout.addWidget(choose_button)
+
+        set_button = QPushButton('Set Color', self)
+        set_button.clicked.connect(self.set_color_from_input)
+        set_button.setMinimumHeight(30)
+        button_layout.addWidget(set_button)
+        
+        main_layout.addLayout(button_layout)
+
+        # Hex Input
+        hex_layout = QHBoxLayout()
+        hex_layout.addStretch(1)
+        
+        self.hex_input = QLineEdit(self)
+        self.hex_input.setText("#000000")
+        self.hex_input.setMaximumWidth(150)
+        self.hex_input.setMinimumHeight(25)
+        self.hex_input.setAlignment(Qt.AlignCenter)
+        self.hex_input.returnPressed.connect(self.set_color_from_input)
+        hex_layout.addWidget(self.hex_input)
+        
+        hex_layout.addStretch(1)
+        main_layout.addLayout(hex_layout)
+
+        # Add stretch at bottom
+        main_layout.addStretch(1)
+
+    def show_color_dialog(self):
+        """Show Qt color picker dialog"""
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.set_color(color)
+
+    def set_color_from_input(self):
+        """Set color from hex input"""
+        hex_text = self.hex_input.text().strip()
+        try:
+            color = QColor(hex_text)
+            if color.isValid():
+                self.set_color(color)
+            else:
+                QMessageBox.warning(self, "Invalid Color", "Please enter a valid hex color code.")
+        except Exception as e:
+            QMessageBox.warning(self, "Invalid Color", f"Error: {e}")
+
+    def keyPressEvent(self, event):
+        """Handle keyboard shortcuts"""
+        if event.key() == Qt.Key_Q or event.key() == Qt.Key_Escape:
+            self.close()
+        elif event.key() == Qt.Key_A and event.modifiers() & Qt.ShiftModifier:
+            # Shift+A: Disable always on top
+            self.setWindowFlags(Qt.Window)
+            self.show()
+            self.center_on_current_screen()
+        elif event.key() == Qt.Key_A:
+            # A: Enable always on top
+            self.setWindowFlags(Qt.Window | Qt.WindowStaysOnTopHint)
+            self.show()
+            self.center_on_current_screen()
+
+    def set_color(self, color):
+        """Set the color and copy to clipboard"""
+        self.color_widget.setStyleSheet(
+            f"background-color: {color.name()}; border: 1px solid #ccc; border-radius: 5px;"
+        )
+        self.color_name_display.setText(color.name().upper())
+        self.hex_input.setText(color.name().upper())
+        
+        # Copy to clipboard
+        clipboard = QApplication.clipboard()
+        clipboard.setText(color.name().upper())
+
+    def center(self):
+        """Center window on primary screen"""
+        screen = QApplication.primaryScreen()
+        if screen:
+            geometry = screen.availableGeometry()
+            self.move(
+                geometry.x() + (geometry.width() - self.width()) // 2,
+                geometry.y() + (geometry.height() - self.height()) // 2
+            )
+
+    def center_on_current_screen(self):
+        """Center window on current screen"""
+        window_center = self.geometry().center()
+        screen = QApplication.screenAt(window_center)
+        
+        if screen is None:
+            screen = QApplication.screenAt(self.pos())
+        
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        
+        if screen:
+            geometry = screen.availableGeometry()
+            self.move(
+                geometry.x() + (geometry.width() - self.width()) // 2,
+                geometry.y() + (geometry.height() - self.height()) // 2
+            )
+
+    def check_clipboard(self):
+        """Check clipboard for color codes"""
+        clipboard = QApplication.clipboard()
+        clipboard_text = clipboard.text()
+        
+        if clipboard_text.startswith('#'):
+            try:
+                color = QColor(clipboard_text)
+                if color.isValid():
+                    self.set_color(color)
+            except:
+                pass
+
 
 class ColorNotification(QWidget):
     def __init__(self, config):
@@ -174,6 +358,9 @@ class ColorNotifyApp(QApplication):
         # Create notification widget
         self.notification = ColorNotification(self.config)
         
+        # Create color picker dialog (but don't show yet)
+        self.color_picker = None
+        
         # Create system tray
         self.create_tray()
         
@@ -193,8 +380,7 @@ class ColorNotifyApp(QApplication):
 
     def candidate_config_file(self):
         """
-        Generates a list of cross-platform passinput.ini path candidates,
-        using ~ (expanduser) and env vars (expandvars).
+        Generates a list of cross-platform color-notify.ini path candidates
         """
         return [
             Path.home() / ".color-notify.ini",
@@ -204,47 +390,47 @@ class ColorNotifyApp(QApplication):
             os.path.expanduser("~/.color_notify/color-notify.ini"),
             os.path.expanduser("$HOME/color-notify.ini"),
             os.path.expanduser("$HOME/.color_notify/color-notify.ini"),
-            # Sistem global (Linux/macOS)
             "/etc/color-notify.ini",
             "/etc/color_notify/color-notify.ini",
-            # Windows (home + roaming/local config)
             os.path.expandvars("%USERPROFILE%\\color-notify.ini"),
             os.path.expandvars("%USERPROFILE%\\.color_notify\\color-notify.ini"),
             os.path.expandvars("%APPDATA%\\color_notify\\color-notify.ini"),
             os.path.expandvars("%PROGRAMDATA%\\color_notify\\color-notify.ini"),
             str(Path(__file__).parent / "color-notify.ini"),
-            str(Path(__file__).parent / ".color_notify/color-notify.ini")
+            str(Path(__file__).parent / ".color_notify" / "color-notify.ini")
         ]
         
     def load_config(self):
         """Load configuration from INI file"""
+        config_file = None
         
         for cfile in self.candidate_config_file():
             if os.path.isfile(cfile):
                 config_file = cfile
                 break    
         
-        # Fallback to local config
-        if not Path(config_file).exists():
+        # Fallback to create new config
+        if not config_file or not Path(config_file).exists():
             if sys.platform == 'win32':
                 config_dir = os.path.expandvars("%USERPROFILE%\\.color_notify")
                 os.makedirs(config_dir, exist_ok=True)
-                config_path = os.path.expandvars("%USERPROFILE%\\.color_notify\\color-notify.ini")
+                config_file = os.path.expandvars("%USERPROFILE%\\.color_notify\\color-notify.ini")
             else:
                 try:
-                    config_dir = os.path.expanduser("$HOME/.color_notify")
+                    config_dir = os.path.expanduser("~/.color_notify")
                     os.makedirs(config_dir, exist_ok=True)
-                    config_path = os.path.expanduser("$HOME/.color_notify/color-notify.ini")
+                    config_file = os.path.expanduser("~/.color_notify/color-notify.ini")
                 except:
-                    config_path = os.path.expanduser("/etc/color-notify.ini")
-
-            if config_path and not os.path.isfile(config_path):
-                self.create_default_config(config_path)
+                    config_file = "/etc/color-notify.ini"
+            
+            if config_file and not os.path.isfile(config_file):
+                self.create_default_config(config_file)
+                print(f"Created config file: {config_file}")
             else:
                 print(f"Using config file: {config_file}")
         else:
             print(f"Using config file: {config_file}")
-
+            
         config = {
             'position': 'right_center',
             'opacity': 0.95,
@@ -254,11 +440,11 @@ class ColorNotifyApp(QApplication):
             'detect_hex': True,
             'detect_rgb': True,
             'detect_hsl': False,
-            'poll_interval': 1000,  # Increased default for stability
+            'poll_interval': 1000,
             'sound_enabled': False,
         }
         
-        if Path(config_file).exists():
+        if config_file and Path(config_file).exists():
             parser = configparser.ConfigParser()
             parser.read(config_file)
             
@@ -276,15 +462,13 @@ class ColorNotifyApp(QApplication):
                 config['detect_hex'] = sect.getboolean('detect_hex', True)
                 config['detect_rgb'] = sect.getboolean('detect_rgb', True)
                 config['detect_hsl'] = sect.getboolean('detect_hsl', False)
-                config['poll_interval'] = int(sect.get('poll_interval', '500'))
-        else:
-            self.create_default_config(str(config_file))
+                config['poll_interval'] = int(sect.get('poll_interval', '1000'))
             
         return config
         
     def create_default_config(self, config_file):
         """Create default config file"""
-        print(f"WARNING: create config file {config_file} ...")
+        print(f"Creating config file: {config_file}")
         config = configparser.ConfigParser()
         
         config['notification'] = {
@@ -314,38 +498,13 @@ class ColorNotifyApp(QApplication):
             
     def create_tray(self):
         """Create system tray icon"""
-        # Create icon
-        # pixmap = QPixmap(64, 64)
-        # pixmap.fill(Qt.transparent)
-        # pixmap = QPixmap(str(Path(__file__).parent / "ICONS" / "color-notify_64.ico")).scaled(
-        #     64, 64,
-        #     Qt.KeepAspectRatio,
-        #     Qt.SmoothTransformation
-        # )
-
-        # painter = QPainter(pixmap)
-        
-        # # Gradient effect
-        # painter.setBrush(QColor(100, 150, 255))
-        # painter.setPen(Qt.NoPen)
-        # painter.drawEllipse(8, 8, 48, 48)
-        
-        # # Inner circle
-        # painter.setBrush(QColor(255, 255, 255, 100))
-        # painter.drawEllipse(16, 16, 32, 32)
-        
-        # painter.end()
-        
-        # icon = QIcon(pixmap)
-
         ico_path = str(Path(__file__).parent / "icons" / "color-notify_128.ico")
-        # print(f"ico_path is file: {os.path.isfile(ico_path)}")
+        
         if os.path.isfile(ico_path):
             icon = QIcon(ico_path)
         else:
             pixmap = QPixmap(64, 64)
             pixmap.fill(Qt.transparent)
-
             painter = QPainter(pixmap)
             
             # Gradient effect
@@ -360,31 +519,6 @@ class ColorNotifyApp(QApplication):
             painter.end()
             
             icon = QIcon(pixmap)
-
-        # pix = QPixmap(ico_path)
-        # print("Pixmap OK:", not pix.isNull(), pix.size())
-
-        # base_icon = QPixmap(ico_path)
-
-        # pixmap = QPixmap(64, 64)
-        # pixmap.fill(Qt.transparent)
-
-        # painter = QPainter(pixmap)
-
-        # # gambar icon dari file dulu
-        # painter.drawPixmap(0, 0, base_icon.scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-
-        # # lalu efekmu
-        # painter.setBrush(QColor(100, 150, 255))
-        # painter.setPen(Qt.NoPen)
-        # painter.drawEllipse(8, 8, 48, 48)
-
-        # painter.setBrush(QColor(255, 255, 255, 100))
-        # painter.drawEllipse(16, 16, 32, 32)
-
-        # painter.end()
-
-        # icon = QIcon(pixmap)
         
         # Create tray
         self.tray = QSystemTrayIcon(icon, self)
@@ -392,6 +526,13 @@ class ColorNotifyApp(QApplication):
         
         # Create menu
         menu = QMenu()
+        
+        # Color Picker Dialog action
+        picker_action = QAction("🎨 Color Picker", self)
+        picker_action.triggered.connect(self.show_color_picker)
+        menu.addAction(picker_action)
+        
+        menu.addSeparator()
         
         # Test notification action
         test_action = QAction("🧪 Test Notification", self)
@@ -432,6 +573,15 @@ class ColorNotifyApp(QApplication):
         
         self.tray.setContextMenu(menu)
         self.tray.show()
+    
+    def show_color_picker(self):
+        """Show color picker dialog"""
+        if self.color_picker is None:
+            self.color_picker = ColorPickerDialog()
+        
+        self.color_picker.show()
+        self.color_picker.raise_()
+        self.color_picker.activateWindow()
         
     def toggle_monitoring(self):
         """Toggle clipboard monitoring"""
@@ -463,9 +613,14 @@ class ColorNotifyApp(QApplication):
         
     def open_config(self):
         """Open config file"""
-        config_file = Path.home() / ".color-notify.ini"
-        if not config_file.exists():
-            config_file = Path("color-notify.ini")
+        config_file = None
+        for cfile in self.candidate_config_file():
+            if os.path.isfile(cfile):
+                config_file = cfile
+                break
+        
+        if not config_file:
+            config_file = Path.home() / ".color-notify.ini"
         
         import subprocess
         import platform
