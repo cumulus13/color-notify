@@ -12,6 +12,26 @@ Displays notifications when color codes are detected in clipboard
 import sys
 import os
 import re
+HAS_RICH = False
+HAS_MAKE_COLORS = False
+
+try:
+    from rich.console import Console
+    console = Console()
+    HAS_RICH=True
+except:
+    pass
+
+try:
+    from make_colors import Console
+    console = Console()
+    HAS_MAKE_COLORS=True
+except:
+    class console:
+        @classmethod
+        def print(cls, *args, **kwargs):
+            return print(*args, **kwargs)
+
 import configparser
 from pathlib import Path
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QSystemTrayIcon, 
@@ -502,9 +522,15 @@ class ColorNotifyApp(QApplication):
                 self.create_default_config(config_file)
                 print(f"Created config file: {config_file}")
             else:
-                print(f"Using config file: {config_file}")
+                if HAS_RICH or HAS_MAKE_COLORS:
+                    console.print(f"[bold #FFFF00]Using config file:[/] [bold #00FFFF]{config_file}[/]")
+                else:
+                    print(f"Using config file: {config_file}")
         else:
-            print(f"Using config file: {config_file}")
+            if HAS_RICH or HAS_MAKE_COLORS:
+                console.print(f"[bold #FFFF00]Using config file:[/] [bold #00FFFF]{config_file}[/]")
+            else:
+                print(f"Using config file: {config_file}")
             
         config = {
             'position': 'right_center',
@@ -790,19 +816,76 @@ class ColorNotifyApp(QApplication):
             # Silently ignore other clipboard errors
             pass
 
+def get_version():
+    """
+    Get the version of the ddf module.
+    Version is taken from the __version__.py file if it exists.
+    The content of __version__.py should be:
+    version = "0.33"
+    """
+    try:
+        version_file = Path(__file__).parent / "__version__.py"
+        if version_file.is_file():
+            with open(version_file, "r") as f:
+                for line in f:
+                    if line.strip().startswith("version"):
+                        parts = line.split("=")
+                        if len(parts) == 2:
+                            return parts[1].strip().strip('"').strip("'")
+    except Exception as e:
+        if os.getenv('TRACEBACK') and os.getenv('TRACEBACK') in ['1', 'true', 'True']:
+            console.print_exception(show_locals=False)
+        else:
+            console.log(f"[white on red]ERROR:[/] [white on blue]{e}[/]")
+
+    return "UNKNOWN VERSION"
+
+def _show_config(app):
+    config_data = str(app.load_config()).replace("'", '"')
+    print("\n")
+    if HAS_RICH:
+        from rich import print_json
+        from rich.pretty import pprint
+        try:
+            import json5
+            print_json(f"[bold #AAAAFF]{json5.loads(config_data)}[/]")
+        except:
+            pprint(config_data)
+    else:
+        print(config_data, "[bold #AAAAFF]")
 
 def main():
-    """Main entry point"""
-    app = ColorNotifyApp(sys.argv)
-    
-    # Cleanup on exit
-    def cleanup():
-        if hasattr(app, 'hotkey_handler') and app.hotkey_handler:
-            app.hotkey_handler.stop()
-    
-    app.aboutToQuit.connect(cleanup)
-    sys.exit(app.exec_())
+    import argparse
+    HAS_CUSTOM_RICH=False
+    try:
+        from licface import CustomRichHelpFormatter
+        HAS_CUSTOM_RICH=True
+    except:
+        CustomRichHelpFormatter = argparse.RawTextHelpFormatter
 
+    parser = argparse.ArgumentParser(prog="color-notify", formatter_class=CustomRichHelpFormatter)
+    parser.add_argument('-v', '--version', action='version', version=f"version: {get_version()}", help="Show version")
+    parser.add_argument('-s', '--show-config', help = 'Show config', action='store_true')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        print("\n")
+
+    args = parser.parse_args()
+    app = ColorNotifyApp(sys.argv)
+
+    if args.show_config:
+        _show_config(app)
+    
+    # main(show_version=args.version, show_config=args.show_config)
+    else:
+        # Cleanup on exit
+        def cleanup():
+            if hasattr(app, 'hotkey_handler') and app.hotkey_handler:
+                app.hotkey_handler.stop()
+        
+        app.aboutToQuit.connect(cleanup)
+        sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()

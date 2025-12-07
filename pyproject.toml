@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "color-notify"
-version = "1.0.8"
+version = "1.0.9"
 description = "Desktop notification tool for clipboard color code detection"
 readme = "README.md"
 keywords = [ "color", "notification", "clipboard", "monitor", "desktop", "growl", "hex", "rgb", "color-picker", "system-tray", "pyqt5", "qt", "gui",]
