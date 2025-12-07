@@ -61,6 +61,7 @@ Interactive dialog for manual color selection.
 
 | Feature | Description | Shortcut |
 |---------|-------------|----------|
+| **Global Shortcut** | Open from anywhere | `Ctrl+Alt+Shift+C` ⭐ |
 | **Qt Color Dialog** | Full color picker | - |
 | **Hex Input** | Manual entry | Enter |
 | **Color Preview** | Large preview box | - |
@@ -176,21 +177,27 @@ luminance = (0.299 × R + 0.587 × G + 0.114 × B) / 255
 ```
 Design Tool → Copy Color → Notification → Verify
      ↓
-Color Picker → Choose → Auto Copy → Paste
+Ctrl+Alt+Shift+C → Choose → Auto Copy → Paste
 ```
 
 ### Development Workflow
 ```
 Code → Copy Color → Notification → Check
     ↓
-Color Picker → Test → Copy → Implement
+Ctrl+Alt+Shift+C → Test → Copy → Implement
 ```
 
 ### Testing Workflow
 ```
-Spec → Color Picker → Choose → Compare → Verify
+Spec → Ctrl+Alt+Shift+C → Choose → Compare → Verify
          ↓
   Notification confirms copied colors
+```
+
+### Lightning Workflow ⚡
+```
+Any App → Ctrl+Alt+Shift+C → Pick → Ctrl+V
+Total: 3 seconds!
 ```
 
 ## 🚀 Performance

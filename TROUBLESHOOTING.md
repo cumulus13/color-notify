@@ -2,6 +2,60 @@
 
 ## Common Issues and Solutions
 
+### 0. Global Hotkey Not Working
+
+**Symptom:**
+Pressing `Ctrl+Alt+Shift+C` doesn't open Color Picker
+
+**Causes:**
+- pynput not installed
+- Permission issues (macOS/Linux)
+- Conflicting application using same shortcut
+
+**Solutions:**
+
+#### A. Install pynput
+```bash
+pip install pynput
+```
+
+Check if installed:
+```bash
+pip list | grep pynput
+```
+
+#### B. Grant Permissions (macOS)
+1. System Preferences → Security & Privacy
+2. Privacy tab → Accessibility
+3. Add Python or Terminal to the list
+4. Restart Color Notify
+
+#### C. Grant Permissions (Linux)
+Some systems need permissions:
+```bash
+# Check if running
+ps aux | grep color-notify
+
+# Run with appropriate permissions if needed
+```
+
+#### D. Check for Conflicts
+- Close other color picker apps
+- Check keyboard remapping tools
+- Try using tray menu as alternative
+
+#### E. Verify Installation
+```python
+# Test pynput
+python -c "from pynput import keyboard; print('pynput OK')"
+```
+
+If you see "Warning: pynput not installed" when starting:
+```bash
+pip install pynput
+# Then restart color-notify
+```
+
 ### 1. Clipboard Access Warnings (Windows)
 
 **Symptom:**

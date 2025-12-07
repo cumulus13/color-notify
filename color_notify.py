@@ -17,17 +17,77 @@ from pathlib import Path
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QSystemTrayIcon, 
                              QMenu, QAction, QColorDialog, QVBoxLayout, 
                              QHBoxLayout, QPushButton, QLineEdit, QMessageBox)
-from PyQt5.QtCore import QTimer, Qt, QPoint, QPropertyAnimation, QEasingCurve
+from PyQt5.QtCore import QTimer, Qt, QPoint, QPropertyAnimation, QEasingCurve, pyqtSignal, QObject
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
+
+# Global hotkey support
+try:
+    from pynput import keyboard
+    GLOBAL_HOTKEY_AVAILABLE = True
+except ImportError:
+    GLOBAL_HOTKEY_AVAILABLE = False
+    print("Warning: pynput not installed. Global hotkey disabled.")
+    print("Install with: pip install pynput")
 
 try:
     from version_get import VersionGet
     __version__ = VersionGet().get(True)
 except:
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
 __author__ = "Hadi Cahyadi"
 __email__ = "cumulus13@gmail.com"
+
+
+class GlobalHotkeyHandler(QObject):
+    """Handle global hotkeys using pynput"""
+    hotkey_pressed = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
+        self.listener = None
+        self.hotkey = None
+        
+    def start(self):
+        """Start listening for global hotkeys"""
+        if not GLOBAL_HOTKEY_AVAILABLE:
+            return False
+            
+        try:
+            # Define the hotkey combination: Ctrl+Alt+Shift+C
+            self.hotkey = keyboard.HotKey(
+                keyboard.HotKey.parse('<ctrl>+<alt>+<shift>+c'),
+                self.on_activate
+            )
+            
+            # Start the listener
+            self.listener = keyboard.Listener(
+                on_press=self.for_canonical(self.hotkey.press),
+                on_release=self.for_canonical(self.hotkey.release)
+            )
+            self.listener.start()
+            print("Global hotkey registered: Ctrl+Alt+Shift+C")
+            return True
+            
+        except Exception as e:
+            print(f"Failed to register global hotkey: {e}")
+            return False
+    
+    def for_canonical(self, f):
+        """Helper for pynput canonical key handling"""
+        return lambda k: f(self.listener.canonical(k))
+    
+    def on_activate(self):
+        """Called when hotkey is pressed"""
+        self.hotkey_pressed.emit()
+    
+    def stop(self):
+        """Stop the listener"""
+        if self.listener:
+            try:
+                self.listener.stop()
+            except:
+                pass
 
 
 class ColorPickerDialog(QWidget):
@@ -364,6 +424,9 @@ class ColorNotifyApp(QApplication):
         # Create system tray
         self.create_tray()
         
+        # Setup global hotkey
+        self.setup_global_hotkey()
+        
         # Start clipboard monitoring
         self.clipboard_obj = self.clipboard()
         self.clipboard_obj.dataChanged.connect(self.on_clipboard_change)
@@ -377,6 +440,18 @@ class ColorNotifyApp(QApplication):
         # Error counter for clipboard access
         self.clipboard_error_count = 0
         self.max_clipboard_errors = 3
+    
+    def setup_global_hotkey(self):
+        """Setup global keyboard shortcut"""
+        if GLOBAL_HOTKEY_AVAILABLE:
+            self.hotkey_handler = GlobalHotkeyHandler()
+            self.hotkey_handler.hotkey_pressed.connect(self.show_color_picker)
+            success = self.hotkey_handler.start()
+            if not success:
+                print("Warning: Global hotkey registration failed")
+        else:
+            self.hotkey_handler = None
+            print("Info: Global hotkey not available. Use tray menu to access Color Picker.")
 
     def candidate_config_file(self):
         """
@@ -528,7 +603,10 @@ class ColorNotifyApp(QApplication):
         menu = QMenu()
         
         # Color Picker Dialog action
-        picker_action = QAction("🎨 Color Picker", self)
+        if GLOBAL_HOTKEY_AVAILABLE:
+            picker_action = QAction("🎨 Color Picker (Ctrl+Alt+Shift+C)", self)
+        else:
+            picker_action = QAction("🎨 Color Picker", self)
         picker_action.triggered.connect(self.show_color_picker)
         menu.addAction(picker_action)
         
@@ -638,12 +716,19 @@ class ColorNotifyApp(QApplication):
         
     def show_about(self):
         """Show about dialog"""
+        hotkey_info = ""
+        if GLOBAL_HOTKEY_AVAILABLE:
+            hotkey_info = "\nGlobal Shortcut: Ctrl+Alt+Shift+C\n(Opens Color Picker)\n"
+        else:
+            hotkey_info = "\nGlobal hotkey disabled\n(Install pynput to enable)\n"
+            
         self.tray.showMessage(
             "Color Notify", 
             f"Version {__version__}\n"
             f"By {__author__}\n\n"
             "Clipboard color detection tool\n"
-            "Copy a color code to see notification!\n\n"
+            "Copy a color code to see notification!\n"
+            f"{hotkey_info}\n"
             "https://github.com/cumulus13/color-notify",
             QSystemTrayIcon.Information, 
             5000
@@ -709,6 +794,13 @@ class ColorNotifyApp(QApplication):
 def main():
     """Main entry point"""
     app = ColorNotifyApp(sys.argv)
+    
+    # Cleanup on exit
+    def cleanup():
+        if hasattr(app, 'hotkey_handler') and app.hotkey_handler:
+            app.hotkey_handler.stop()
+    
+    app.aboutToQuit.connect(cleanup)
     sys.exit(app.exec_())
 
 

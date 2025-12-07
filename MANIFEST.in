@@ -17,3 +17,6 @@ include icons\color-notify.png
 
 # Added entries (1 items) - 2025-12-06 17:33:58
 include icons\color-notify_128.ico
+
+# Added entries (1 items) - 2025-12-07 09:05:47
+exclude RELEASE_NOTE_v1.0.8.md

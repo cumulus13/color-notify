@@ -29,6 +29,7 @@ A desktop notification tool that detects color codes in your clipboard and displ
 
 ### Color Picker Dialog
 - 🎨 **Interactive color picker** - Qt color dialog integration
+- ⌨️ **Global shortcut** - **Ctrl+Alt+Shift+C** to open from anywhere
 - 💾 **Auto-copy to clipboard** - Selected colors automatically copied
 - 🔍 **Hex input support** - Manually enter hex color codes
 - ⌨️ **Keyboard shortcuts** - Quick access with hotkeys
@@ -48,6 +49,14 @@ A desktop notification tool that detects color codes in your clipboard and displ
 ```bash
 pip install color-notify
 ```
+
+### Requirements
+
+- Python 3.6+
+- PyQt5
+- pynput (for global hotkey support)
+
+> **Note**: The global hotkey `Ctrl+Alt+Shift+C` requires `pynput`. If not installed, you can still use the tray menu to access the color picker.
 
 ## 🚀 Usage
 
@@ -77,15 +86,20 @@ The application will start in the background with a system tray icon.
 
 ### Color Picker Mode
 
-1. Right-click the tray icon
-2. Select **"🎨 Color Picker"**
-3. Use the color picker dialog to:
+1. Right-click the tray icon and select **"🎨 Color Picker"**
+   
+   **OR**
+   
+   Press global shortcut: **`Ctrl+Alt+Shift+C`** (from anywhere!)
+
+2. Use the color picker dialog to:
    - Click **"Choose Color"** to open Qt color dialog
    - Type hex code in input field and press Enter
    - Selected color automatically copied to clipboard
 
 #### Color Picker Keyboard Shortcuts
 
+- `Ctrl+Alt+Shift+C` - **Open color picker (global shortcut)**
 - `Q` or `Escape` - Close color picker
 - `A` - Enable always on top
 - `Shift + A` - Disable always on top
@@ -146,7 +160,7 @@ Right-click the tray icon and select **"Open Config File"** to edit settings.
 
 ## 🎯 System Tray Menu
 
-- **🎨 Color Picker** - Open color picker dialog
+- **🎨 Color Picker (Ctrl+Alt+Shift+C)** - Open color picker dialog
 - **🧪 Test Notification** - Display a random color notification
 - **⏸️ Pause/Resume Monitoring** - Toggle clipboard monitoring
 - **🔄 Reload Config** - Reload configuration without restart

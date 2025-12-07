@@ -32,17 +32,22 @@ pip install -e .
 
 - Python 3.6 or higher
 - PyQt5 5.15.0 or higher
+- pynput 1.7.6 or higher (for global hotkey)
 
 ### Platform-Specific Notes
 
 #### Windows
-No additional requirements.
+No additional requirements. Global hotkey works out of the box.
 
 #### macOS
 ```bash
 # If you encounter PyQt5 issues, try:
 pip install --upgrade pip setuptools wheel
 pip install PyQt5
+
+# For global hotkey support, grant accessibility permissions:
+# System Preferences → Security & Privacy → Accessibility
+# Add Python or Terminal to the list
 ```
 
 #### Linux
@@ -52,6 +57,11 @@ sudo apt-get install python3-pyqt5
 
 # Or via pip
 pip install PyQt5
+
+# For global hotkey support
+pip install pynput
+
+# Some systems may need additional permissions for keyboard monitoring
 ```
 
 ## Verify Installation

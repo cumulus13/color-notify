@@ -32,13 +32,19 @@ A notification will appear showing the color! 🎨
 
 ### 2. Active Mode - Color Picker
 
+**Method 1: Tray Menu**
 1. Right-click tray icon → **"🎨 Color Picker"**
+
+**Method 2: Global Shortcut** ⭐
+1. Press **`Ctrl+Alt+Shift+C`** from anywhere!
+
 2. Choose a color:
    - Click "Choose Color" button
    - Or type hex code and press Enter
 3. Color automatically copied to clipboard! ✨
 
 #### Color Picker Shortcuts
+- `Ctrl+Alt+Shift+C` → **Open picker (global)** ⭐
 - `Q` or `Escape` → Close
 - `A` → Always on top ON
 - `Shift+A` → Always on top OFF

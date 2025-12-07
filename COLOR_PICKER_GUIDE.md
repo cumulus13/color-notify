@@ -4,11 +4,20 @@ Complete guide for using the Color Picker dialog in Color Notify.
 
 ## 🎨 Opening Color Picker
 
-### Method 1: System Tray
-1. Right-click Color Notify tray icon
-2. Click **"🎨 Color Picker"**
+### Method 1: Global Shortcut ⭐ **RECOMMENDED**
+Press **`Ctrl+Alt+Shift+C`** from anywhere!
 
-### Method 2: Command Line (future)
+This works:
+- In any application
+- On any screen/workspace
+- Even when Color Notify is minimized
+- No need to access tray menu
+
+### Method 2: System Tray
+1. Right-click Color Notify tray icon
+2. Click **"🎨 Color Picker (Ctrl+Alt+Shift+C)"**
+
+### Method 3: Command Line (future)
 ```bash
 color-notify --picker
 ```
@@ -70,13 +79,17 @@ The color picker automatically monitors clipboard:
 
 ## ⌨️ Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Q` | Close color picker |
-| `Escape` | Close color picker |
-| `A` | Enable Always on Top |
-| `Shift + A` | Disable Always on Top |
-| `Enter` | Apply color from hex input |
+| Shortcut | Action | Scope |
+|----------|--------|-------|
+| `Ctrl+Alt+Shift+C` | **Open color picker** | **Global** ⭐ |
+| `Q` | Close color picker | Local |
+| `Escape` | Close color picker | Local |
+| `A` | Enable Always on Top | Local |
+| `Shift + A` | Disable Always on Top | Local |
+| `Enter` | Apply color from hex input | Local |
+
+**Global** = Works from anywhere, even outside Color Notify
+**Local** = Works only when color picker is focused
 
 ## 📋 Auto-Copy Feature
 
@@ -93,17 +106,27 @@ Use immediately in:
 
 ## 🎯 Workflow Examples
 
-### Quick Color Picking
+### Quick Color Picking ⭐
 ```
-1. Open Color Picker (tray menu)
+1. Press Ctrl+Alt+Shift+C (from anywhere!)
 2. Click "Choose Color"
 3. Pick color
 4. Paste in your app (Ctrl+V)
 ```
 
+### Lightning Fast Workflow 🚀
+```
+Working in Photoshop/Figma/VSCode:
+1. Need color? → Ctrl+Alt+Shift+C
+2. Pick → Auto-copied
+3. Back to work (Alt+Tab)
+4. Paste (Ctrl+V)
+Total time: ~3 seconds!
+```
+
 ### Testing Hex Codes
 ```
-1. Open Color Picker
+1. Ctrl+Alt+Shift+C to open picker
 2. Type hex: #3498db
 3. Press Enter
 4. See preview

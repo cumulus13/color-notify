@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2025-12-07
+
+### Added
+- **Global Keyboard Shortcut** - `Ctrl+Alt+Shift+C` to open Color Picker from anywhere ⭐
+- **System tray menu integration** - "🎨 Color Picker" menu item with shortcut hint
+- Uses `pynput` library for true system-wide hotkey
+  - Works in any application
+  - Cross-platform support (Windows, macOS, Linux)
+  - Graceful fallback if pynput not installed
+
 ## [1.0.2-1.0.5] - 2025-12-06
 
 ### Added
@@ -16,15 +26,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Color preview with name display
   - Keyboard shortcuts (Q/Escape to close, A for AOT toggle)
   - Multi-monitor support with auto-centering
-- **System tray menu integration** - "🎨 Color Picker" menu item
+- **System tray menu integration** - "🎨 Color Picker (Ctrl+Alt+Shift+C)" menu item
 - **Two modes of operation** - Passive monitoring + Active picking
+- **GlobalHotkeyHandler class** - Separate handler for global hotkeys
+- **Cleanup on exit** - Proper hotkey listener cleanup
 
 ### Changed
-- Enhanced system tray menu with color picker at top
+- Enhanced system tray menu with color picker at top and shortcut hint
 - Improved application structure with separate ColorPickerDialog class
 - Better window management for color picker dialog
+- About dialog now shows global shortcut information
+- Requirements now include `pynput>=1.7.6` for global hotkey support
+
+### Technical
+- Uses `pynput.keyboard.HotKey` for cross-platform hotkey support
+- Qt signal/slot connection for hotkey activation
+- Proper listener cleanup on application exit
+- Graceful degradation if pynput not available
+
+### Documentation
+- Added GLOBAL_HOTKEY_SETUP.md - Complete setup guide for all platforms
+- Updated all documentation with global hotkey information
+- Platform-specific setup instructions
+- Troubleshooting guide for hotkey issues
 
 ### Features
+- Global shortcut works system-wide from any application
 - Color picker monitors clipboard every second
 - Always on top mode with keyboard toggle (A / Shift+A)
 - Press Enter in hex input to set color

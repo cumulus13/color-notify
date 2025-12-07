@@ -75,7 +75,8 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         "PyQt5>=5.15.0",
-        "version_get"
+        "version_get",
+        "pynput>=1.7.6",
     ],
     entry_points={
         "console_scripts": [
