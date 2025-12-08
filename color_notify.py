@@ -112,8 +112,9 @@ class GlobalHotkeyHandler(QObject):
 
 class ColorPickerDialog(QWidget):
     """Color Picker Dialog Window"""
-    def __init__(self):
+    def __init__(self, config=None):
         super().__init__()
+        self.config = config or {}
         self.init_ui()
         self.clipboard_timer = QTimer(self)
         self.clipboard_timer.timeout.connect(self.check_clipboard)
@@ -197,10 +198,79 @@ class ColorPickerDialog(QWidget):
         main_layout.addStretch(1)
 
     def show_color_dialog(self):
-        """Show Qt color picker dialog"""
-        color = QColorDialog.getColor()
-        if color.isValid():
-            self.set_color(color)
+        """Show Qt color picker dialog positioned next to main dialog"""
+        # Create color dialog
+        color_dialog = QColorDialog(self)
+        
+        # Get current position and size
+        main_pos = self.pos()
+        main_width = self.width()
+        main_height = self.height()
+        
+        # Get screen geometry
+        screen = QApplication.screenAt(main_pos)
+        if screen is None:
+            screen = QApplication.primaryScreen()
+        screen_geom = screen.availableGeometry()
+        
+        # Get preferred position from config (default: right)
+        preferred_position = self.config.get('color_dialog_position', 'right')
+        
+        # Calculate position for color dialog
+        dialog_width = 480  # Approximate QColorDialog width
+        dialog_height = 420  # Approximate QColorDialog height
+        gap = 10  # Gap between dialogs
+        
+        if preferred_position == 'left':
+            # Try left first
+            left_x = main_pos.x() - dialog_width - gap
+            if left_x >= screen_geom.left():
+                color_dialog.move(left_x, main_pos.y())
+            else:
+                # Fallback to right
+                right_x = main_pos.x() + main_width + gap
+                color_dialog.move(right_x, main_pos.y())
+                
+        elif preferred_position == 'top':
+            # Position above
+            top_y = main_pos.y() - dialog_height - gap
+            if top_y >= screen_geom.top():
+                color_dialog.move(main_pos.x(), top_y)
+            else:
+                # Fallback to bottom
+                bottom_y = main_pos.y() + main_height + gap
+                color_dialog.move(main_pos.x(), bottom_y)
+                
+        elif preferred_position == 'bottom':
+            # Position below
+            bottom_y = main_pos.y() + main_height + gap
+            if bottom_y + dialog_height <= screen_geom.bottom():
+                color_dialog.move(main_pos.x(), bottom_y)
+            else:
+                # Fallback to top
+                top_y = main_pos.y() - dialog_height - gap
+                color_dialog.move(main_pos.x(), top_y)
+                
+        else:  # default: 'right'
+            # Try right first
+            right_x = main_pos.x() + main_width + gap
+            if right_x + dialog_width <= screen_geom.right():
+                color_dialog.move(right_x, main_pos.y())
+            else:
+                # Fallback to left
+                left_x = main_pos.x() - dialog_width - gap
+                if left_x >= screen_geom.left():
+                    color_dialog.move(left_x, main_pos.y())
+                else:
+                    # If neither fits, center it
+                    center_x = screen_geom.center().x() - dialog_width // 2
+                    color_dialog.move(center_x, main_pos.y())
+        
+        # Show dialog and get result
+        if color_dialog.exec_() == QColorDialog.Accepted:
+            color = color_dialog.currentColor()
+            if color.isValid():
+                self.set_color(color)
 
     def set_color_from_input(self):
         """Set color from hex input"""
@@ -543,6 +613,7 @@ class ColorNotifyApp(QApplication):
             'detect_hsl': False,
             'poll_interval': 1000,
             'sound_enabled': False,
+            'color_dialog_position': 'right',  # Position of Qt Color Dialog: left, right, top, bottom
         }
         
         if config_file and Path(config_file).exists():
@@ -557,6 +628,10 @@ class ColorNotifyApp(QApplication):
                 config['timeout'] = int(sect.get('timeout', '3000'))
                 config['margin'] = int(sect.get('margin', '20'))
                 config['sound_enabled'] = sect.getboolean('sound_enabled', False)
+                
+            if 'color_picker' in parser:
+                sect = parser['color_picker']
+                config['color_dialog_position'] = sect.get('color_dialog_position', 'right')
                 
             if 'detection' in parser:
                 sect = parser['detection']
@@ -581,6 +656,10 @@ class ColorNotifyApp(QApplication):
             'sound_enabled': 'False',
         }
         
+        config['color_picker'] = {
+            'color_dialog_position': 'right',
+        }
+        
         config['detection'] = {
             'detect_hex': 'True',
             'detect_rgb': 'True',
@@ -592,7 +671,8 @@ class ColorNotifyApp(QApplication):
             with open(config_file, 'w') as f:
                 f.write("# Color Notify Configuration\n")
                 f.write("# Position: left_up, left_center, left_down, center_up, center_center, center_down, right_up, right_center, right_down\n")
-                f.write("# Timeout: milliseconds (0 = no auto-hide)\n\n")
+                f.write("# Timeout: milliseconds (0 = no auto-hide)\n")
+                f.write("# Color Dialog Position: left, right, top, bottom (position of Qt Color Dialog relative to Color Picker)\n\n")
                 config.write(f)
         except Exception as e:
             print(f"Warning: Could not create config file: {e}")
@@ -681,7 +761,7 @@ class ColorNotifyApp(QApplication):
     def show_color_picker(self):
         """Show color picker dialog"""
         if self.color_picker is None:
-            self.color_picker = ColorPickerDialog()
+            self.color_picker = ColorPickerDialog(self.config)
         
         self.color_picker.show()
         self.color_picker.raise_()

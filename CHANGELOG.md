@@ -5,12 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.8] - 2025-12-07
+## [1.0.10] - 2025-12-08
 
 ### Added
-- **Global Keyboard Shortcut** - `Ctrl+Alt+Shift+C` to open Color Picker from anywhere ⭐
-- **System tray menu integration** - "🎨 Color Picker" menu item with shortcut hint
-- Uses `pynput` library for true system-wide hotkey
+- **Smart Focus Management** ⭐
+  - Focus automatically returns to previous window when canceling (Escape)
+  - Optional auto-hide after color selection
+  - Seamless workflow - no manual window switching needed
+  - New config option: `auto_hide_after_pick`
+- **Smart Color Dialog Positioning**
+  - Qt Color Dialog now opens next to Color Picker (not overlapping!)
+  - Configurable position: left, right, top, bottom
+  - Auto-fallback if preferred position doesn't fit screen
+  - Multi-monitor aware positioning
+  - New config section `[color_picker]` with `color_dialog_position` option
+  - **Global Keyboard Shortcut** - `Ctrl+Alt+Shift+C` to open Color Picker from anywhere
+  - **System tray menu integration** - "🎨 Color Picker" menu item with shortcut hint
+  - Uses `pynput` library for true system-wide hotkey
   - Works in any application
   - Cross-platform support (Windows, macOS, Linux)
   - Graceful fallback if pynput not installed

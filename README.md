@@ -29,6 +29,9 @@ A desktop notification tool that detects color codes in your clipboard and displ
 
 ### Color Picker Dialog
 - 🎨 **Interactive color picker** - Qt color dialog integration
+- 📍 **Smart positioning** - Color dialog opens next to picker (configurable: left/right/top/bottom)
+- 🎯 **Smart focus management** - Focus returns to previous window on Escape
+- ⚙️ **Auto-hide option** - Optionally close picker after color selection
 - ⌨️ **Global shortcut** - **Ctrl+Alt+Shift+C** to open from anywhere
 - 💾 **Auto-copy to clipboard** - Selected colors automatically copied
 - 🔍 **Hex input support** - Manually enter hex color codes
@@ -135,6 +138,16 @@ margin = 20
 
 # Enable notification sound (not implemented yet)
 sound_enabled = False
+
+[color_picker]
+# Position of Qt Color Dialog relative to Color Picker
+# Options: left, right, top, bottom
+color_dialog_position = right
+
+# Auto-hide Color Picker after selecting a color
+# True = Closes picker and returns to previous window
+# False = Keeps picker open for multiple picks (default)
+auto_hide_after_pick = False
 
 [detection]
 # Detect HEX format (#FF0000, #F00)
